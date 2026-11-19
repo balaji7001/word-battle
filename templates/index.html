@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>⚡ WORD BATTLE ⚡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head><body>
+
+<!-- animated sky background -->
+<div id="bg">
+  <div class="cloud" style="top:8%;left:-20%;animation-delay:0s"></div>
+  <div class="cloud" style="top:20%;left:-20%;animation-delay:7s;width:120px;height:50px"></div>
+  <div class="cloud" style="top:5%;left:-20%;animation-delay:14s;width:80px;height:35px"></div>
+  <div id="stars"></div>
+</div>
+
+<!-- ripple layer -->
+<div id="ripple-layer"></div>
+
+<main>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<section id="home" class="screen on">
+  <div class="logo-wrap">
+    <div class="logo-sparkle" id="logoSpark"></div>
+    <h1 class="logo">
+      <span class="logo-w">W</span><span class="logo-o">O</span><span class="logo-r">R</span><span class="logo-d">D</span>
+      <br>
+      <span class="logo-b">B</span><span class="logo-a">A</span><span class="logo-t">T</span><span class="logo-t2">T</span><span class="logo-l">L</span><span class="logo-e">E</span>
+    </h1>
+    <div class="mascots">
+      <span class="mascot left" aria-hidden="true">🦁</span>
+      <span class="mascot right" aria-hidden="true">🐯</span>
+    </div>
+  </div>
+  <p class="tag">Change the word. Win the battle! ✨</p>
+  <input id="name" maxlength="16" placeholder="Your name 🌟" aria-label="Your name">
+  <button class="btn primary bounce-btn" id="quick">⚡ Play Online (quick match)</button>
+  <button class="btn wiggle-btn" data-go="setup" data-mode="friend">👫 Play with Friends</button>
+  <button class="btn" data-go="how">📖 How to Play</button>
+  <button class="btn" id="lbBtn">🏆 Leaderboard</button>
+</section>
+
+<!-- ═══════════════ HOW TO PLAY ═══════════════ -->
+<section id="how" class="screen">
+  <h2 class="screen-title">📖 How to Play</h2>
+  <ol class="card how-list">
+    <li><span class="how-num">1</span> Take turns changing <strong>exactly one letter</strong>.</li>
+    <li><span class="how-num">2</span> Every new word must be a <strong>real English word</strong>.</li>
+    <li><span class="how-num">3</span> A letter matching the target <strong>locks for good 🔒</strong>.</li>
+    <li><span class="how-num">4</span> Words can't repeat. Whoever makes the <strong>target word wins! 🎉</strong></li>
+  </ol>
+  <button class="btn back-btn" data-go="home">← Back</button>
+</section>
+
+<!-- ═══════════════ LEADERBOARD ═══════════════ -->
+<section id="board" class="screen">
+  <h2 class="screen-title">🏆 Leaderboard</h2>
+  <ol id="lb" class="card"></ol>
+  <div id="mystats" class="card stats-card"></div>
+  <button class="btn back-btn" data-go="home">← Back</button>
+</section>
+
+<!-- ═══════════════ SETUP ═══════════════ -->
+<section id="setup" class="screen">
+  <h2 class="screen-title">🎮 Game Setup</h2>
+  <div class="card col">
+    <label>Start word <input id="start" maxlength="6" autocomplete="off"></label>
+    <label>Target word <input id="target" maxlength="6" autocomplete="off"></label>
+    <div class="row">
+      <button class="btn sm bounce-btn" id="rnd">🎲 Random challenge</button>
+      <select id="diff" aria-label="Difficulty">
+        <option value="3">🟢 Easy (3)</option>
+        <option value="4" selected>🟡 Medium (4)</option>
+        <option value="5">🔴 Hard (5)</option>
+      </select>
+    </div>
+    <label>Turn timer
+      <select id="timer">
+        <option>15</option><option selected>30</option><option>60</option><option value="0">Unlimited</option>
+      </select>
+    </label>
+    <button class="btn primary bounce-btn" id="create">🚀 Create Private Room</button>
+    <div class="row">
+      <input id="joincode" maxlength="5" placeholder="Room code 🔑">
+      <button class="btn sm bounce-btn" id="join">Join!</button>
+    </div>
+  </div>
+  <button class="btn back-btn" data-go="home">← Back</button>
+</section>
+
+<!-- ═══════════════ LOBBY ═══════════════ -->
+<section id="lobby" class="screen">
+  <h2 class="screen-title">🎪 Lobby</h2>
+  <div class="card center">
+    <p class="muted">Your room code</p>
+    <div class="code" id="code"></div>
+    <button class="btn sm bounce-btn" id="copy">📋 Copy Code</button>
+    <p id="lobbyMsg" class="muted lobby-msg"></p>
+  </div>
+  <div id="lobbyPlayers" class="row"></div>
+  <button class="btn primary bounce-btn" id="ready">✅ Ready!</button>
+</section>
+
+<!-- ═══════════════ GAME ═══════════════ -->
+<section id="game" class="screen">
+  <div class="row top" id="playerRow">
+    <div class="pcard" id="p0"></div>
+    <div class="vs-badge">VS</div>
+    <div class="pcard" id="p1"></div>
+  </div>
+  <div id="conn" class="muted center conn-txt"></div>
+  <div class="timer-wrap">
+    <div class="bar"><i id="barfill"></i></div>
+    <div id="timerGlow" class="timer-glow"></div>
+  </div>
+  <div id="turnTxt" class="center turn-txt"></div>
+  <div class="ft">
+    <span>FROM <b id="from"></b></span>
+    <span class="arrow-bounce">→</span>
+    <span>TO <b id="to"></b></span>
+  </div>
+  <div id="tiles" class="tiles" role="group" aria-label="Current word"></div>
+  <div id="picker" class="picker"></div>
+  <div class="center preview-row"><span class="muted">Preview:</span> <b id="preview" class="preview-word"></b></div>
+  <div class="row">
+    <button class="btn primary bounce-btn" id="submit" disabled>🚀 Submit Move</button>
+    <button class="btn sm" id="mute">🔊 Sound</button>
+  </div>
+
+  <!-- ── EMOJI REACTIONS ── -->
+  <div class="react-panel">
+    <div class="react-label">React!</div>
+    <div class="react-grid" id="reacts"></div>
+  </div>
+
+  <div id="hist" class="muted center hist-txt"></div>
+
+  <!-- ── LIVE CHAT ── -->
+  <div class="chat-wrap card" id="chatWrap">
+    <div class="chat-header" id="chatHeader">
+      <span class="chat-icon">💬</span>
+      <span class="chat-title">Live Chat</span>
+      <span class="chat-unread" id="chatUnread"></span>
+      <button class="chat-chevron" id="chatToggle" aria-label="Toggle chat">▼</button>
+    </div>
+    <div class="chat-body" id="chatBody" aria-live="polite" aria-label="Chat messages"></div>
+    <div class="chat-emoji-bar" id="chatEmojiBar"></div>
+    <div class="chat-footer">
+      <input id="chatInput" class="chat-input" maxlength="120" placeholder="Type a message… 😄" autocomplete="off" aria-label="Chat message">
+      <button class="btn chat-send" id="chatSend" aria-label="Send message">➤</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════ WIN OVERLAY ═══════════════ -->
+<div id="win" class="overlay">
+  <canvas id="confetti"></canvas>
+  <div class="win-card card center">
+    <div class="win-stars" id="winStars"></div>
+    <div class="trophy-anim" id="trophyAnim">🏆</div>
+    <h2 id="winTitle" class="win-title"></h2>
+    <div class="tiles" id="winTiles"></div>
+    <p id="winInfo" class="win-info"></p>
+    <div class="row">
+      <button class="btn primary bounce-btn" id="again">🔄 Rematch!</button>
+      <button class="btn" id="homeBtn">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- toasts -->
+<div id="toasts" aria-live="polite"></div>
+
+<!-- floating emoji reactions -->
+<div id="float-layer"></div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="/static/js/main.js"></script>
+</body></html>
