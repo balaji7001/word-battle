@@ -5,7 +5,7 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const socket = io({ reconnection: true });
+const socket = io({ transports: ['polling'], upgrade: false, reconnection: true });
 
 let S = JSON.parse(sessionStorage.getItem('wb') || 'null');
 let st = null, sel = null, pick = null, muted = false, offset = 0, prev = null;
