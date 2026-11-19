@@ -1,6 +1,6 @@
 import os
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
-ASYNC_MODE = os.environ.get("ASYNC_MODE", "threading")   # use "eventlet" in production
+ASYNC_MODE = os.environ.get("ASYNC_MODE", "gevent")   # gevent for production WebSocket support
 CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*")        # set to your https origin in production
 DB_PATH = os.environ.get("DB_PATH", "wordbattle.db")
 WORDLIST_PATH = os.environ.get("WORDLIST_PATH", "words.txt")  # local wordlist (3-6 letter English words)
