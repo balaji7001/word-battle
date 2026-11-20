@@ -162,10 +162,41 @@
   <div id="tiles" class="tiles" role="group" aria-label="Current word"></div>
   <div id="picker" class="picker"></div>
 
+  <!-- word definition -->
+  <div class="word-def-box" id="wordDef"></div>
+
   <div class="preview-row">
     <span class="preview-label">Preview</span>
     <span id="preview" class="preview-word">—</span>
     <button class="btn primary bounce-btn submit-btn" id="submit" disabled>🚀 Submit</button>
+  </div>
+
+  <!-- game controls: pause · reset · hints · forfeit -->
+  <div class="game-controls">
+    <button class="ctrl-btn" id="pauseBtn" title="Pause game">⏸ Pause</button>
+    <button class="ctrl-btn" id="resumeBtn" title="Resume game" style="display:none">▶ Resume</button>
+    <button class="ctrl-btn hint-btn" id="hintBtn" title="Use a hint (3 per game)">
+      💡 Hint <span class="hint-counter" id="hintCounter">3</span>
+    </button>
+    <button class="ctrl-btn reset-btn" id="resetBtn" title="Propose a reset (both must agree)">🔄 Reset</button>
+    <button class="ctrl-btn forfeit-btn" id="forfeitBtn" title="Surrender the match">🏳 Forfeit</button>
+  </div>
+
+  <!-- hint reveal panel -->
+  <div class="hint-panel" id="hintPanel" style="display:none">
+    <div class="hint-panel-title">💡 Hint Words</div>
+    <div class="hint-words" id="hintWords"></div>
+    <button class="ctrl-btn" id="hintClose">✕ Close</button>
+  </div>
+
+  <!-- pause overlay -->
+  <div class="pause-overlay" id="pauseOverlay" style="display:none">
+    <div class="pause-card">
+      <div class="pause-icon">⏸</div>
+      <div class="pause-title">Game Paused</div>
+      <p class="pause-sub">Waiting to resume…</p>
+      <button class="btn primary bounce-btn" id="resumeOverlayBtn">▶ Resume</button>
+    </div>
   </div>
 
   <!-- react panel -->
@@ -216,6 +247,20 @@
 </div>
 
 <div id="toasts" aria-live="polite"></div>
+
+<!-- ══════════ DRAW OVERLAY ══════════ -->
+<div id="draw" class="overlay">
+  <canvas id="drawCanvas"></canvas>
+  <div class="win-card card center">
+    <div class="draw-icon">🤝</div>
+    <h2 class="win-title" style="background:linear-gradient(90deg,#60c8ff,#c084fc);-webkit-background-clip:text;background-clip:text">It's a Draw!</h2>
+    <p class="win-info" id="drawInfo"></p>
+    <div class="row win-btns">
+      <button class="btn primary bounce-btn" id="drawAgain">🔄 Rematch!</button>
+      <button class="btn" id="drawHome">🏠 Home</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="/static/js/main.js"></script>

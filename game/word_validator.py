@@ -1,4 +1,4 @@
-"""Word validation. DictionaryService is swappable: set WORDLIST_PATH for a curated list."""
+"""Word validation + dead-end detection. DictionaryService is swappable."""
 import json, threading, urllib.request, urllib.error
 import config
 
@@ -18,7 +18,7 @@ class DictionaryService:
         w = word.lower()
         if not (w.isascii() and w.isalpha()):
             return False
-        if self.words is not None:                      # curated list is authoritative
+        if self.words is not None:
             return w in self.words
         with self.lock:
             if w in self.cache:
@@ -32,10 +32,10 @@ class DictionaryService:
             if e.code != 404:
                 raise DictionaryUnavailable(str(e))
             ok = False
-        except Exception as e:                          # timeout, DNS, bad JSON
+        except Exception as e:
             raise DictionaryUnavailable(str(e))
         with self.lock:
-            self.cache[w] = ok                          # only definitive answers are cached
+            self.cache[w] = ok
         return ok
 
 
@@ -45,21 +45,78 @@ default_service = DictionaryService(config.WORDLIST_PATH, config.USE_DICTIONARY_
 def is_valid_english_word(word, service=None):
     return (service or default_service).is_word(word)
 
+
 def validate_word_length(old, new):
     return len(old) == len(new)
 
+
 def count_changed_letters(old, new):
     return sum(a != b for a, b in zip(old, new)) if len(old) == len(new) else max(len(old), len(new))
+
 
 def get_changed_position(old, new):
     diff = [i for i, (a, b) in enumerate(zip(old, new)) if a != b]
     return diff[0] if len(diff) == 1 else None
 
+
 def get_locked_positions(current, target):
     return [i for i, (a, b) in enumerate(zip(current.upper(), target.upper())) if a == b]
 
+
 def is_locked_position(position, locked):
     return position in locked
+
+
+def get_next_hints(current, target, used, service=None, n=3):
+    """Return up to n valid one-letter changes from current toward target that haven't been used."""
+    svc = service or default_service
+    locked = get_locked_positions(current, target)
+    hints = []
+    # First prioritise moves that match a target letter
+    for i, (c, t) in enumerate(zip(current, target)):
+        if i in locked or c == t:
+            continue
+        candidate = current[:i] + t + current[i+1:]
+        if candidate.upper() not in used and svc.is_word(candidate.lower()):
+            hints.append(candidate.upper())
+        if len(hints) >= n:
+            return hints
+    # Then any other valid move
+    if len(hints) < n and svc.words:
+        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        for i in range(len(current)):
+            if i in locked:
+                continue
+            for ch in alphabet:
+                if ch == current[i]:
+                    continue
+                candidate = current[:i] + ch + current[i+1:]
+                if candidate.upper() not in used and svc.is_word(candidate.lower()):
+                    if candidate.upper() not in hints:
+                        hints.append(candidate.upper())
+                if len(hints) >= n:
+                    return hints
+    return hints
+
+
+def can_progress(current, target, used, service=None):
+    """Return True if at least one valid unused one-letter change exists from current."""
+    svc = service or default_service
+    locked = get_locked_positions(current, target)
+    if not svc.words:
+        return True  # can't check without wordlist — optimistic
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    for i in range(len(current)):
+        if i in locked:
+            continue
+        for ch in alphabet:
+            if ch == current[i]:
+                continue
+            candidate = current[:i] + ch + current[i+1:]
+            if candidate.upper() not in used and svc.is_word(candidate.lower()):
+                return True
+    return False
+
 
 def validate_game_move(g, player_idx, new_word, service=None):
     """Returns (ok, code, message). Never mutates state."""
